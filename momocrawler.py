@@ -15,17 +15,19 @@ from google.oauth2.service_account import Credentials
 
 ### 假設要查詢"DJI"
 ### 輸入搜尋名稱
-search_name = input("請輸入搜尋名稱: ")
+#search_name = input("請輸入搜尋名稱: ")
+#web = f'https://www.momoshop.com.tw/search/searchShop.jsp?keyword={search_name}&searchType=1&curPage=1&_isFuzzy=0&showType=chessboardType&priceIndex={price_index}'
+
 
 ### 輸入價格範圍
-min_price = input("請輸入最低價格: ")
-max_price = input("請輸入最高價格: ")
+#min_price = input("請輸入最低價格: ")
+#max_price = input("請輸入最高價格: ")
 
 ### 建立價格搜尋區間的索引
-price_index = f'{min_price}_{max_price}'
+#price_index = f'{min_price}_{max_price}'
 
 ### 構建搜尋 URL
-web = f'https://www.momoshop.com.tw/search/searchShop.jsp?keyword={search_name}&searchType=1&curPage=1&_isFuzzy=0&showType=chessboardType&priceIndex={price_index}'
+web = 'https://www.momoshop.com.tw/search/searchShop.jsp?keyword=餐券&searchType=1&curPage=1&_isFuzzy=0&showType=chessboardType&priceIndex={price_index}'
 
 ### requests伺服器資料
 options = webdriver.ChromeOptions()
@@ -37,17 +39,18 @@ driver.maximize_window()  ###最大化視窗
 driver.get(web)
 
 # 填入價格範圍並點擊確認按鈕
-price_input = driver.find_element(By.ID, 'priceS')
-price_input.clear()
-price_input.send_keys(min_price)
+###
+#price_input = driver.find_element(By.ID, 'priceS')
+#price_input.clear()
+#price_input.send_keys(min_price)
 
-price_input = driver.find_element(By.ID, 'priceE')
-price_input.clear()
-price_input.send_keys(max_price)
+#price_input = driver.find_element(By.ID, 'priceE')
+#price_input.clear()
+#price_input.send_keys(max_price)
 
-confirm_btn = driver.find_element(By.CSS_SELECTOR, '.priceBtn')
-confirm_btn.click()
-
+#confirm_btn = driver.find_element(By.CSS_SELECTOR, '.priceBtn')
+#confirm_btn.click()
+###
 
 ### BeautifulSoup 正式開始
 soup = BeautifulSoup(driver.page_source, "html.parser")
@@ -65,7 +68,9 @@ link = []
 for i in product_sorted:
     name_list.append(i.find('h3', class_="prdName").text)
     slogan_list.append(i.find('p', class_="sloganTitle").text)
-    price_list.append(i.find('span', class_="price").text)
+    price = i.find('span', class_="price").text
+    price = price.replace('$', '')  # 移除 $
+    price_list.append(price)
     url = urljoin(web, i['href'])  # 將相對路徑轉換為完整的 URL
     url_list.append(url)
     # link.append(i.find('a','href').text)#有問題,有要連結,和前5頁
@@ -83,7 +88,7 @@ spreadsheet = gc.open_by_url('https://docs.google.com/spreadsheets/d/1oYLGZwnxuV
 worksheet = spreadsheet.get_worksheet(0)
 
 # 將資料寫入工作表
-data = [['產品名稱', '副標題', '商品價格','連結']] + list(zip(name_list, slogan_list, price_list,url_list))
+data = [['名稱', '價格','連結']] + list(zip(name_list, price_list,url_list))
 worksheet.clear()  # 清除工作表中原有的資料
 worksheet.insert_rows(data, row=1)  # 將新資料插入到工作表中
 
